@@ -25,7 +25,7 @@ async def getkey():
     pc = data["Join-Key"]
     return pc
 
-async def GetData():
+def GetData():
     while True:
         try:
             response = requests.get(

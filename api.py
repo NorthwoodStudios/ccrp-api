@@ -1,30 +1,30 @@
-import flask
-from flask import Flask
-import asyncio
+import os
 import requests
 import time
+from threading import Thread
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
 data = {
-    "PlayerCount":0,
-    "Join-Key":"PlaceHolder"
+    "PlayerCount": 0,
+    "JoinKey": "PlaceHolder"
 }
 
-@app.route('/')
-async def alive():
+# Routes
+@app.route("/")
+def alive():
     return "WE ARE ALIVE!!!!!!"
 
-@app.route('/ccrp/api/playercount')
-async def getcount():
-    pc = data["PlayerCount"]
-    return pc
+@app.route("/ccrp/api/playercount")
+def getcount():
+    return jsonify({"CurrentPlayers": data["PlayerCount"]})
 
-@app.route('/ccrp/api/join-key')
-async def getkey():
-    pc = data["Join-Key"]
-    return pc
+@app.route("/ccrp/api/joinkey")
+def getkey():
+    return jsonify({"JoinKey": data["JoinKey"]})
 
+# Background data fetch
 def GetData():
     while True:
         try:
@@ -39,7 +39,7 @@ def GetData():
 
             if response.status_code == 200:
                 result = response.json()
-                data["Join-Key"] = result.get("JoinKey", "")
+                data["JoinKey"] = result.get("JoinKey", "")
                 data["PlayerCount"] = result.get("CurrentPlayers", 0)
                 print(f"Updated: {data}")
             else:
@@ -48,15 +48,12 @@ def GetData():
         except Exception as e:
             print("Request failed:", e)
 
-        # Sleep 10 seconds between requests to avoid rate limiting
-        time.sleep(10)
-        
+        time.sleep(10)  # Update every 10 seconds
 
+# Start background thread
+Thread(target=GetData, daemon=True).start()
 
-asyncio.create_task(GetData())
-
-
-
-
-
-
+# Run Flask app on Render's port
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 data = {
-    "PlayerCount": 0,
+    "PlayerCount": str(0),
     "JoinKey": "PlaceHolder"
 }
 
@@ -42,7 +42,7 @@ def GetData():
             if response.status_code == 200:
                 result = response.json()
                 data["JoinKey"] = result.get("JoinKey", "")
-                data["PlayerCount"] = result.get("CurrentPlayers", 0)
+                data["PlayerCount"] = str(result.get("CurrentPlayers", 0))
                 print(f"Updated: {data}")
             else:
                 print(f"Error: Status code {response.status_code}")
